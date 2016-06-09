@@ -1,8 +1,8 @@
 # Overview
 
-Solutions by [Trevor Elwell](http://trevorelwell.me)]
+Solutions by [Trevor Elwell](http://trevorelwell.me)
 
-Please note that I changed most of the function names so that they were a bit more 'Ruby-ish'.
+**Please note** that I changed most of the function names so that they were a bit more 'Ruby-ish'.
 
 The initial data has 50 URLs assigned to 5 random user_ids.
 
