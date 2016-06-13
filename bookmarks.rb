@@ -1,3 +1,5 @@
+require_relative('node')
+
 USERS = 5
 INITIAL_URLS = 50
 
@@ -7,6 +9,7 @@ class App
 	def initialize
 		@data = init_data
 		@user_ids = build_user_ids(@data)
+		@nodes = build_nodes
 	end
 	
 	
@@ -78,40 +81,28 @@ class App
 	end
 	
 	
-	# NOTE: This function doesn't actually work but provides a basic
-	# idea of how it would work if we had an actual relevance graph
-	# with working Node objects.
-	def get_recommended_urls(user_id, url)
-		hop_count = 0
-		initial_node = get_node(url)
-		nodes = adjacent_nodes(initial_node)
-		
-		# It's 2 because we start with the nodes
-		# ADJACENT to the initial node, not the initial
-		# node itself.
-		until hop_count == 2
-			temp_nodes = []
-			nodes.each do |node|
-				temp_nodes << adjacent_nodes(node)
-			end
-			# Flatten turns nested arrays into a single array
-			# [1,[2,3]].flatten => [1,2,3]
-			nodes = temp_nodes.flatten
-			hop_count += 1
+	def get_deep_nodes(user_id, url, node = nil, hop_count = 0)
+		nodes = []
+		node = get_node(url) if node.nil?
+		if hop_count == 3
+			return node
+		else
+			nodes << get_deep_nodes(user_id, url, node.a, hop_count + 1) if node.a
+			nodes << get_deep_nodes(user_id, url, node.b, hop_count + 1) if node.b
+			nodes << get_deep_nodes(user_id, url, node.c, hop_count + 1) if node.c
 		end
-		
-		# Finally, return a collection of our recommended URLs
-		nodes.collect{|node| node.get_url}
+		# TODO: Filter nodes that a user has already saved
+		return nodes.flatten
 	end
 	
 	
-	# Return the nodes adjacent to a given node
-	def adjacent_nodes(node)
-		adjacent_nodes = []
-		adjacent_nodes << node.A if node.A
-		adjacent_nodes << node.B if node.B
-		adjacent_nodes << node.C if node.C
-		adjacent_nodes
+	def get_node(url)
+		@nodes.each do |i, node|
+			if node.url == url
+				return node
+			end
+		end
+		return false
 	end
 
 
@@ -119,8 +110,7 @@ private
 
 
 	def init_data
-		# Ensure that data is empty. I could have used unless here
-		# but I find it convoluted to read at times.
+		# Ensure that data is empty.
 		data = []
 		# Random number generator to be used when creating URLs
 		r = Random.new
@@ -145,6 +135,47 @@ private
 			ids << x[:user_id] if !ids.include?(x[:user_id])
 		end
 		ids
+	end
+	
+	
+	def build_nodes
+		nodes = {}
+		nodes[:n1] = Node.new(1, 1)
+		nodes[:n2] = Node.new(2, 2)
+		nodes[:n3] = Node.new(3, 3)
+		nodes[:n4] = Node.new(4, 4)
+		nodes[:n5] = Node.new(5, 5)
+		nodes[:n6] = Node.new(6, 6)
+		nodes[:n7] = Node.new(7, 7)
+		nodes[:n8] = Node.new(8, 8)
+		nodes[:n9] = Node.new(9, 9)
+		nodes[:n10] = Node.new(10, 10)
+		nodes[:n11] = Node.new(11, 11)
+		nodes[:n12] = Node.new(12, 12)
+		nodes[:n13] = Node.new(13, 13)
+		nodes[:n14] = Node.new(14, 14)
+		nodes[:n15] = Node.new(15, 15)
+		nodes[:n16] = Node.new(16, 16)
+		nodes[:n17] = Node.new(17, 17)
+
+		nodes[:n1].a = nodes[:n2]
+		nodes[:n1].b = nodes[:n3]
+		nodes[:n1].c = nodes[:n4]
+		nodes[:n4].c = nodes[:n5]
+		nodes[:n5].a = nodes[:n6]
+		nodes[:n5].b = nodes[:n7]
+		nodes[:n6].b = nodes[:n8]
+		nodes[:n3].b = nodes[:n9]
+		nodes[:n9].a = nodes[:n10]
+		nodes[:n9].b = nodes[:n12]
+		nodes[:n9].c = nodes[:n13]
+		nodes[:n10].a = nodes[:n11]
+		nodes[:n13].c = nodes[:n14]
+		nodes[:n3].c = nodes[:n15]
+		nodes[:n15].b = nodes[:n16]
+		nodes[:n16].b = nodes[:n17]
+		
+		nodes
 	end
 	
 	
